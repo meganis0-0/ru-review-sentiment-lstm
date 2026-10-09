@@ -59,6 +59,21 @@ python -m venv .venv
 
 ### Docker
 
+Проверки, заготовка обучения и интерфейс:
+
 ```powershell
 docker compose run --rm checks
+docker compose run --rm train
+docker compose up app
+```
+
+Optuna dashboard: `docker compose up optuna`, затем http://localhost:8081.
+Label Studio: `docker compose up label-studio`, затем http://localhost:8080.
+
+Интерфейс: http://localhost:8501.
+
+GPU для обучения подключается отдельным файлом, после установки драйвера NVIDIA и поддержки GPU в Docker Desktop:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml run --rm train
 ```
