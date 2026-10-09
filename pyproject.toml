@@ -23,6 +23,13 @@ dev = [
     "pre-commit>=4",
 ]
 
+app = ["streamlit>=1.40"]
+
+hpo = [
+    "optuna>=4",
+    "optuna-dashboard>=0.17",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
@@ -34,6 +41,9 @@ src = ["src", "tests", "app"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
 
 [tool.black]
 line-length = 100
