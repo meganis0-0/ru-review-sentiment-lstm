@@ -50,7 +50,10 @@ tests/
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -e ".[dev]"
+.\.venv\Scripts\pre-commit install
 .\.venv\Scripts\ruff check .
+.\.venv\Scripts\black --check .
+.\.venv\Scripts\isort --check-only .
 .\.venv\Scripts\pytest
 ```
 

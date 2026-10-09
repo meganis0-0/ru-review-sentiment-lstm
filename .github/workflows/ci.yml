@@ -20,5 +20,9 @@ jobs:
         run: .venv/bin/pip install -e ".[dev]"
       - name: Ruff
         run: .venv/bin/ruff check .
+      - name: Black
+        run: .venv/bin/black --check .
+      - name: Isort
+        run: .venv/bin/isort --check-only .
       - name: Pytest
         run: .venv/bin/pytest
