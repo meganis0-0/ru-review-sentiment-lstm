@@ -1,0 +1,2 @@
+type: lstm
+# embedding_dim, hidden_size, num_layers, dropout — задаются при реализации модели и HPO

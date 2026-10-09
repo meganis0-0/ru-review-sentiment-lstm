@@ -1,0 +1,10 @@
+experiment_name: ru-review-sentiment-lstm
+task: classification
+num_classes: 3
+class_names:
+  - negative
+  - neutral
+  - positive
+metric: f1_macro
+target_metric: 0.80
+seed: 42

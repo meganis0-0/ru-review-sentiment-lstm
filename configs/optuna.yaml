@@ -1,0 +1,4 @@
+n_trials_min: 20
+n_trials_max: 50
+storage: sqlite:///optuna.db
+# search space — learning rate, batch size, dropout, hidden size, embedding dim

@@ -1,0 +1,6 @@
+services:
+  checks:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: ["sh", "-c", "ruff check . && pytest"]
