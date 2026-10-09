@@ -30,6 +30,8 @@ hpo = [
     "optuna-dashboard>=0.17",
 ]
 
+data = ["dvc>=3"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

@@ -21,12 +21,9 @@ htmlcov/
 *.pem
 credentials.json
 
-# Data and experiment artifacts
-data/raw/*
-data/interim/*
-data/processed/*
-data/external/*
-!data/**/.gitkeep
+# Датасет версионируется через DVC, локальный remote — storage/.
+/data
+/storage
 checkpoints/
 logs/
 runs/
