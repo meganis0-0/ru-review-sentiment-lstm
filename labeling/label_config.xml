@@ -1,0 +1,9 @@
+<View>
+  <Header value="Сфера: $source_name"/>
+  <Text name="review" value="$text"/>
+  <Choices name="sentiment" toName="review" choice="single-radio" required="true">
+    <Choice value="negative"/>
+    <Choice value="neutral"/>
+    <Choice value="positive"/>
+  </Choices>
+</View>
