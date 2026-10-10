@@ -1,2 +1,9 @@
 type: lstm
-# embedding_dim, hidden_size, num_layers, dropout — задаются при реализации модели и HPO
+embedding_dim: 128
+hidden_size: 128
+num_layers: 1
+dropout: 0.3
+num_classes: 3
+padding_idx: 0
+# Размер словаря берётся из data/processed/vocab.json при создании модели.
+# Подбор embedding_dim, hidden_size, num_layers и dropout — задача HPO.

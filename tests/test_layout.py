@@ -15,7 +15,7 @@ REQUIRED_PATHS = (
     "docker-compose.yml",
     "notebooks/01_eda.ipynb",
     "src/data/dataset.py",
-    "src/models",
+    "src/models/rnn.py",
     "tests",
     ".github/workflows/ci.yml",
     ".github/ISSUE_TEMPLATE/task.md",
