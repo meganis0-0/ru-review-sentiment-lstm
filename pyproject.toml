@@ -9,7 +9,9 @@ description = "LSTM-классификатор тональности отзыв
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-dependencies = []
+dependencies = [
+    "scikit-learn>=1.5",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

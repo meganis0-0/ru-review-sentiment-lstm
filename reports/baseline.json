@@ -1,0 +1,45 @@
+{
+  "seed": 42,
+  "vocab_size": 15629,
+  "majority_label": "negative",
+  "val": {
+    "majority": {
+      "accuracy": 0.33544303797468356,
+      "f1_macro": 0.1674565560821485,
+      "f1": {
+        "negative": 0.5023696682464455,
+        "neutral": 0.0,
+        "positive": 0.0
+      }
+    },
+    "logistic_regression": {
+      "accuracy": 0.5928270042194093,
+      "f1_macro": 0.5948778889955361,
+      "f1": {
+        "negative": 0.5897435897435898,
+        "neutral": 0.5151515151515151,
+        "positive": 0.6797385620915033
+      }
+    }
+  },
+  "test": {
+    "majority": {
+      "accuracy": 0.33544303797468356,
+      "f1_macro": 0.1674565560821485,
+      "f1": {
+        "negative": 0.5023696682464455,
+        "neutral": 0.0,
+        "positive": 0.0
+      }
+    },
+    "logistic_regression": {
+      "accuracy": 0.6118143459915611,
+      "f1_macro": 0.6119786348433075,
+      "f1": {
+        "negative": 0.620253164556962,
+        "neutral": 0.529968454258675,
+        "positive": 0.6857142857142856
+      }
+    }
+  }
+}
