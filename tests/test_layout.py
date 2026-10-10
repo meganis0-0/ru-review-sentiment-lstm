@@ -14,7 +14,7 @@ REQUIRED_PATHS = (
     "docker/Dockerfile",
     "docker-compose.yml",
     "notebooks/01_eda.ipynb",
-    "src/data",
+    "src/data/dataset.py",
     "src/models",
     "tests",
     ".github/workflows/ci.yml",
