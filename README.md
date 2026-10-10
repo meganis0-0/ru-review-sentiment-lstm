@@ -49,6 +49,14 @@ tests/
 .\.venv\Scripts\python -m src.data.collect --zip $env:USERPROFILE\Downloads\russian-sentiment-dataset.zip
 ```
 
+Исходные метки всех отзывов лежат в `data/interim/labels.csv`. Пилот для ручной проверки — `data/interim/pilot_tasks.json`, 50 отзывов. Инструкция и схема Label Studio: `labeling/`.
+
+```powershell
+docker compose up label-studio
+.\.venv\Scripts\python -m src.data.labeling
+.\.venv\Scripts\python -m src.data.labeling --export data\interim\label-studio-export.json
+```
+
 ## Статус
 
 Каркас проекта готов. Код модели, обучение, подбор гиперпараметров и интерфейс ещё не написаны — они идут отдельными задачами на канбане.
