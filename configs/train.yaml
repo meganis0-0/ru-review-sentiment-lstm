@@ -8,3 +8,11 @@ class_names:
 metric: f1_macro
 target_metric: 0.80
 seed: 42
+epochs: 15
+batch_size: 32
+learning_rate: 0.001
+checkpoint_dir: checkpoints
+log_dir: logs/tensorboard
+early_stopping:
+  patience: 3
+  min_delta: 0.001

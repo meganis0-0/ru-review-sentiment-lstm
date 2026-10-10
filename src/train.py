@@ -5,9 +5,11 @@ from __future__ import annotations
 import json
 import random
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 
 import torch
+import yaml
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -22,11 +24,75 @@ from src.data.dataset import make_loader
 from src.models.rnn import NUM_CLASSES, SentimentLSTM
 from src.utils import get_logger
 
-EPOCHS = 1
-BATCH_SIZE = 32
-LEARNING_RATE = 1e-3
-SEED = 42
 METRIC_LABELS = list(range(NUM_CLASSES))
+
+
+@dataclass(frozen=True)
+class TrainConfig:
+    experiment_name: str
+    epochs: int
+    batch_size: int
+    learning_rate: float
+    seed: int
+    checkpoint_dir: str
+    log_dir: str
+    early_stopping_patience: int
+    early_stopping_min_delta: float
+
+
+class EarlyStopping:
+    """Останавливает обучение, если метрика не выросла на min_delta за patience эпох."""
+
+    def __init__(self, patience: int, min_delta: float) -> None:
+        self.patience = patience
+        self.min_delta = min_delta
+        self.best = float("-inf")
+        self.waits = 0
+
+    def step(self, score: float) -> bool:
+        if score > self.best + self.min_delta:
+            self.best = score
+            self.waits = 0
+            return False
+        self.waits += 1
+        return self.waits >= self.patience
+
+
+def load_train_config(path: Path) -> TrainConfig:
+    """Читает параметры запуска из YAML."""
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"В {path} ожидается словарь параметров")
+    early = payload.get("early_stopping")
+    if not isinstance(early, dict):
+        raise ValueError(f"В {path} нет блока early_stopping")
+    required = (
+        "experiment_name",
+        "epochs",
+        "batch_size",
+        "learning_rate",
+        "seed",
+        "checkpoint_dir",
+        "log_dir",
+    )
+    missing = [key for key in required if key not in payload]
+    if "patience" not in early:
+        missing.append("early_stopping.patience")
+    if "min_delta" not in early:
+        missing.append("early_stopping.min_delta")
+    if missing:
+        raise ValueError(f"В {path} не хватает полей: {', '.join(missing)}")
+    return TrainConfig(
+        experiment_name=str(payload["experiment_name"]),
+        epochs=int(payload["epochs"]),
+        batch_size=int(payload["batch_size"]),
+        learning_rate=float(payload["learning_rate"]),
+        seed=int(payload["seed"]),
+        checkpoint_dir=str(payload["checkpoint_dir"]),
+        log_dir=str(payload["log_dir"]),
+        early_stopping_patience=int(early["patience"]),
+        early_stopping_min_delta=float(early["min_delta"]),
+    )
 
 
 def prepare_runtime(root: Path) -> Path:
@@ -157,6 +223,8 @@ def run_training(
     seed: int,
     checkpoint_dir: Path,
     log_dir: Path,
+    early_stopping_patience: int = 3,
+    early_stopping_min_delta: float = 0.001,
 ) -> dict[str, object]:
     """Кросс-энтропия, AdamW и ReduceLROnPlateau по F1-macro на val."""
     set_seed(seed)
@@ -169,8 +237,10 @@ def run_training(
         factor=0.5,
         patience=1,
     )
+    stopper = EarlyStopping(early_stopping_patience, early_stopping_min_delta)
     writer = SummaryWriter(log_dir=log_dir)
     best_f1 = -1.0
+    stopped_early = False
     history: list[dict[str, object]] = []
     try:
         for epoch in range(1, epochs + 1):
@@ -200,9 +270,17 @@ def run_training(
                 f1_macro,
             )
             logger.info("Матрица ошибок: %s", metrics["confusion_matrix"])
+            if stopper.step(f1_macro):
+                stopped_early = True
+                logger.info(
+                    "Ранняя остановка на эпохе %s: f1-macro не растёт %s эпох.",
+                    epoch,
+                    stopper.patience,
+                )
+                break
     finally:
         writer.close()
-    return {"best_f1_macro": best_f1, "history": history}
+    return {"best_f1_macro": best_f1, "stopped_early": stopped_early, "history": history}
 
 
 def _log_epoch(
@@ -223,26 +301,33 @@ def _log_epoch(
 
 def main() -> None:
     root = Path(__file__).resolve().parents[1]
-    prepare_runtime(root)
+    config = load_train_config(prepare_runtime(root))
     train_path = root / "data" / "processed" / "train.csv"
     val_path = root / "data" / "processed" / "val.csv"
     vocab_path = root / "data" / "processed" / "vocab.json"
     if not train_path.is_file() or not val_path.is_file() or not vocab_path.is_file():
         raise SystemExit("Нет data/processed. Сначала соберите выборку.")
     vocab_size = len(json.loads(vocab_path.read_text(encoding="utf-8")))
-    set_seed(SEED)
+    set_seed(config.seed)
     model = SentimentLSTM(vocab_size)
-    train_loader = make_loader(train_path, batch_size=BATCH_SIZE, shuffle=True, seed=SEED)
-    val_loader = make_loader(val_path, batch_size=BATCH_SIZE, shuffle=False)
+    train_loader = make_loader(
+        train_path,
+        batch_size=config.batch_size,
+        shuffle=True,
+        seed=config.seed,
+    )
+    val_loader = make_loader(val_path, batch_size=config.batch_size, shuffle=False)
     run_training(
         train_loader,
         val_loader,
         model,
-        epochs=EPOCHS,
-        learning_rate=LEARNING_RATE,
-        seed=SEED,
-        checkpoint_dir=root / "checkpoints",
-        log_dir=root / "logs" / "tensorboard",
+        epochs=config.epochs,
+        learning_rate=config.learning_rate,
+        seed=config.seed,
+        checkpoint_dir=root / config.checkpoint_dir,
+        log_dir=root / config.log_dir / config.experiment_name,
+        early_stopping_patience=config.early_stopping_patience,
+        early_stopping_min_delta=config.early_stopping_min_delta,
     )
 
 

@@ -5,7 +5,15 @@ import torch
 from torch import nn
 
 from src.models.rnn import SentimentLSTM
-from src.train import compute_metrics, prepare_runtime, run_training, train_batch, train_epoch
+from src.train import (
+    EarlyStopping,
+    compute_metrics,
+    load_train_config,
+    prepare_runtime,
+    run_training,
+    train_batch,
+    train_epoch,
+)
 
 
 def _batch(labels: list[int]) -> dict[str, torch.Tensor]:
@@ -101,3 +109,52 @@ def test_compute_metrics_uses_all_three_classes() -> None:
 
     assert len(metrics["confusion_matrix"]) == 3
     assert metrics["f1_macro"] < 1
+
+
+def test_train_yaml_has_launch_parameters() -> None:
+    config = load_train_config(Path(__file__).resolve().parents[1] / "configs" / "train.yaml")
+
+    assert config.experiment_name == "ru-review-sentiment-lstm"
+    assert config.epochs == 15
+    assert config.batch_size == 32
+    assert config.learning_rate == 0.001
+    assert config.seed == 42
+    assert config.checkpoint_dir == "checkpoints"
+    assert config.early_stopping_patience == 3
+    assert config.early_stopping_min_delta == 0.001
+
+
+def test_load_train_config_rejects_missing_early_stopping(tmp_path: Path) -> None:
+    path = tmp_path / "train.yaml"
+    path.write_text("experiment_name: test\nepochs: 1\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="early_stopping"):
+        load_train_config(path)
+
+
+def test_early_stopping_waits_for_patience() -> None:
+    stopper = EarlyStopping(patience=2, min_delta=0.01)
+
+    assert stopper.step(0.40) is False
+    assert stopper.step(0.405) is False
+    assert stopper.step(0.42) is False
+    assert stopper.step(0.42) is False
+    assert stopper.step(0.42) is True
+
+
+def test_run_training_stops_when_metric_stalls(tmp_path: Path) -> None:
+    result = run_training(
+        [_batch([0, 1, 2, 0])],
+        [_batch([0, 1, 2, 0])],
+        _model(),
+        epochs=5,
+        learning_rate=0.0,
+        seed=42,
+        checkpoint_dir=tmp_path / "checkpoints",
+        log_dir=tmp_path / "logs",
+        early_stopping_patience=1,
+        early_stopping_min_delta=0.0,
+    )
+
+    assert result["stopped_early"] is True
+    assert len(result["history"]) == 2
