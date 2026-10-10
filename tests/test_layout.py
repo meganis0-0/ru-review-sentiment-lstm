@@ -12,7 +12,7 @@ REQUIRED_PATHS = (
     "data.dvc",
     "docker/Dockerfile",
     "docker-compose.yml",
-    "notebooks",
+    "notebooks/01_eda.ipynb",
     "src/data",
     "src/models",
     "tests",

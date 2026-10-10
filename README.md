@@ -51,6 +51,13 @@ tests/
 
 Исходные метки всех отзывов лежат в `data/interim/labels.csv`. Пилот для ручной проверки — `data/interim/pilot_tasks.json`, 50 отзывов. Инструкция и схема Label Studio: `labeling/`.
 
+Проверка выборки — пустые строки, повторы текста, баланс классов и длина — собрана в `notebooks/01_eda.ipynb`.
+
+```powershell
+.\.venv\Scripts\python -m pip install -e ".[data]"
+.\.venv\Scripts\python -m src.data.validate
+```
+
 ```powershell
 docker compose up label-studio
 .\.venv\Scripts\python -m src.data.labeling
