@@ -4,6 +4,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_PATHS = (
     "README.md",
+    "DATASET_CARD.md",
     "pyproject.toml",
     "configs/train.yaml",
     "configs/model.yaml",
@@ -32,3 +33,9 @@ def test_target_metric_is_recorded() -> None:
     assert "F1-macro" in text
     assert "0.80" in text
     assert "LSTM" in text
+
+
+def test_dataset_card_covers_composition_and_license() -> None:
+    text = (ROOT / "DATASET_CARD.md").read_text(encoding="utf-8")
+    for fragment in ("4788", "negative", "neutral", "positive", "MIT", "Apache-2.0", "31"):
+        assert fragment in text

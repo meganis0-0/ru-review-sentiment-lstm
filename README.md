@@ -64,6 +64,8 @@ tests/
 .\.venv\Scripts\python -m src.data.prepare
 ```
 
+Состав, лицензия и ограничения выборки описаны в `DATASET_CARD.md`.
+
 ```powershell
 docker compose up label-studio
 .\.venv\Scripts\python -m src.data.labeling
