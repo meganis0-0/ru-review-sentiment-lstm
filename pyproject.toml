@@ -12,6 +12,7 @@ license = { text = "MIT" }
 dependencies = [
     "scikit-learn>=1.5",
     "torch>=2.2",
+    "tensorboard>=2.18",
 ]
 
 [tool.setuptools.packages.find]
