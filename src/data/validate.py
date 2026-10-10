@@ -159,8 +159,13 @@ def _shortest(examples: list[dict[str, object]]) -> list[dict[str, object]]:
     return ordered[:EXAMPLE_LIMIT]
 
 
-def _duplicate_key(text: str) -> str:
+def normalized_text(text: str) -> str:
+    """Один вид перевода строки и без пробелов по краям."""
     return text.strip().replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _duplicate_key(text: str) -> str:
+    return normalized_text(text)
 
 
 def _row_reasons(row: dict[str, str]) -> list[str]:

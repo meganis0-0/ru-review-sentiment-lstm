@@ -58,6 +58,12 @@ tests/
 .\.venv\Scripts\python -m src.data.validate
 ```
 
+Обучающие части лежат в `data/processed/`: `train.csv`, `val.csv`, `test.csv`, словарь `vocab.json`. Доли 80/10/10, seed 42, стратификация по сфере и классу. Повтор одного текста остаётся в одной части, словарь строится только по train. Окно — первые 200 токенов.
+
+```powershell
+.\.venv\Scripts\python -m src.data.prepare
+```
+
 ```powershell
 docker compose up label-studio
 .\.venv\Scripts\python -m src.data.labeling
