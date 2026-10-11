@@ -27,6 +27,7 @@ dev = [
     "black>=24.8",
     "isort>=5.13",
     "pre-commit>=4",
+    "optuna>=4",
 ]
 
 app = ["streamlit>=1.40"]

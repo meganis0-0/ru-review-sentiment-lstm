@@ -162,6 +162,25 @@ def test_run_training_stops_when_metric_stalls(tmp_path: Path) -> None:
     assert len(result["history"]) == 2
 
 
+def test_on_epoch_exception_stops_the_run(tmp_path: Path) -> None:
+    def stop(epoch: int, _score: float) -> None:
+        if epoch == 1:
+            raise RuntimeError("prune")
+
+    with pytest.raises(RuntimeError, match="prune"):
+        run_training(
+            [_batch([0, 1, 2, 0])],
+            [_batch([0, 1, 2, 0])],
+            _model(),
+            epochs=3,
+            learning_rate=0.0,
+            seed=42,
+            checkpoint_dir=tmp_path / "checkpoints",
+            log_dir=tmp_path / "logs",
+            on_epoch=stop,
+        )
+
+
 def test_class_weights_grow_for_the_rare_label() -> None:
     balanced = class_weight_tensor(["negative", "neutral", "positive"])
     skewed = class_weight_tensor(["negative", "negative", "neutral", "positive"])

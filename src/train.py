@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import random
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -246,6 +246,7 @@ def run_training(
     early_stopping_min_delta: float = 0.001,
     class_weights: torch.Tensor | None = None,
     model_args: dict[str, object] | None = None,
+    on_epoch: Callable[[int, float], None] | None = None,
 ) -> dict[str, object]:
     """Кросс-энтропия, AdamW и ReduceLROnPlateau по F1-macro на val."""
     set_seed(seed)
@@ -305,6 +306,8 @@ def run_training(
                 f1_macro,
             )
             logger.info("Матрица ошибок: %s", metrics["confusion_matrix"])
+            if on_epoch is not None:
+                on_epoch(epoch, f1_macro)
             if stopper.step(f1_macro):
                 stopped_early = True
                 logger.info(
