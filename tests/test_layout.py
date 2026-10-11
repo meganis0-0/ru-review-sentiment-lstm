@@ -14,6 +14,7 @@ REQUIRED_PATHS = (
     "docker/Dockerfile",
     "docker-compose.yml",
     "notebooks/01_eda.ipynb",
+    "notebooks/03_error_analysis.ipynb",
     "src/data/dataset.py",
     "src/models/rnn.py",
     "tests",
@@ -33,6 +34,12 @@ def test_target_metric_is_recorded() -> None:
     assert "F1-macro" in text
     assert "0.80" in text
     assert "LSTM" in text
+
+
+def test_error_analysis_notebook_reads_the_held_out_split() -> None:
+    text = (ROOT / "notebooks" / "03_error_analysis.ipynb").read_text(encoding="utf-8")
+    for fragment in ("test.csv", "confusion_matrix", "нейтраль", "F1-macro"):
+        assert fragment in text
 
 
 def test_dataset_card_covers_composition_and_license() -> None:
