@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_PATHS = (
     "README.md",
     "DATASET_CARD.md",
+    "MODEL_CARD.md",
     "pyproject.toml",
     "configs/train.yaml",
     "configs/model.yaml",
@@ -39,6 +40,12 @@ def test_target_metric_is_recorded() -> None:
 def test_error_analysis_notebook_reads_the_held_out_split() -> None:
     text = (ROOT / "notebooks" / "03_error_analysis.ipynb").read_text(encoding="utf-8")
     for fragment in ("test.csv", "confusion_matrix", "нейтраль", "F1-macro"):
+        assert fragment in text
+
+
+def test_model_card_covers_metrics_and_limits() -> None:
+    text = (ROOT / "MODEL_CARD.md").read_text(encoding="utf-8")
+    for fragment in ("0.679", "0.80", "Navec", "нейтраль", "банк", "нельзя"):
         assert fragment in text
 
 
