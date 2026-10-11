@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import random
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -74,6 +75,38 @@ class ReviewDataset(Dataset):
         return self.transform(self.rows[index])
 
 
+def drop_tokens(token_ids: list[int], rate: float, rng: random.Random) -> tuple[list[int], int]:
+    """Случайно убирает слова отзыва и заново дополняет хвост pad. Хотя бы одно слово остаётся."""
+    width = len(token_ids)
+    content = [token for token in token_ids if token != PAD_ID]
+    if rate <= 0 or len(content) <= 1:
+        return list(token_ids), len(content)
+    kept = [token for token in content if rng.random() >= rate]
+    if not kept:
+        kept = [content[0]]
+    length = len(kept)
+    if length < width:
+        kept.extend([PAD_ID] * (width - length))
+    return kept[:width], length
+
+
+class TokenDropout(Dataset):
+    """На каждой выдаче выкидывает часть слов, чтобы сеть не запоминала отзыв целиком."""
+
+    def __init__(self, dataset: Dataset, rate: float, seed: int) -> None:
+        self.dataset = dataset
+        self.rate = rate
+        self.rng = random.Random(seed)
+
+    def __len__(self) -> int:
+        return len(self.dataset)
+
+    def __getitem__(self, index: int) -> dict[str, list[int] | int]:
+        item = self.dataset[index]
+        token_ids, length = drop_tokens(list(item["token_ids"]), self.rate, self.rng)
+        return {"token_ids": token_ids, "label": item["label"], "length": length}
+
+
 def collate_reviews(batch: list[dict[str, list[int] | int]]) -> dict[str, torch.Tensor]:
     """Складывает отзывы в тензоры: token_ids [B, T], labels [B], lengths [B]."""
     return {
@@ -90,8 +123,11 @@ def make_loader(
     seed: int = SEED,
     max_len: int = MAX_LEN,
     num_workers: int = 0,
+    token_dropout: float = 0.0,
 ) -> DataLoader:
-    dataset = ReviewDataset(path, transform=ReviewTransform(max_len))
+    dataset: Dataset = ReviewDataset(path, transform=ReviewTransform(max_len))
+    if token_dropout > 0:
+        dataset = TokenDropout(dataset, token_dropout, seed)
     generator = torch.Generator()
     generator.manual_seed(seed)
     return DataLoader(

@@ -1,4 +1,5 @@
 import csv
+import random
 import time
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from src.data.dataset import (
     LabelTransform,
     ReviewDataset,
     TokenIdsTransform,
+    drop_tokens,
     make_loader,
 )
 from src.data.prepare import FIELDNAMES, MAX_LEN, PAD_ID
@@ -77,3 +79,17 @@ def test_loader_reads_a_thousand_rows_quickly(tmp_path: Path) -> None:
 
     assert seen == 1000
     assert time.perf_counter() - started < 5
+
+
+def test_drop_tokens_keeps_the_review_when_rate_is_zero() -> None:
+    ids, length = drop_tokens([4, 5, 0, 0], 0.0, random.Random(0))
+
+    assert ids == [4, 5, 0, 0]
+    assert length == 2
+
+
+def test_drop_tokens_keeps_one_word_when_every_word_is_removed() -> None:
+    ids, length = drop_tokens([4, 5, 6, 0, 0], 1.0, random.Random(0))
+
+    assert ids == [4, 0, 0, 0, 0]
+    assert length == 1
