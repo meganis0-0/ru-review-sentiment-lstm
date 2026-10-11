@@ -1,9 +1,16 @@
 type: lstm
-embedding_dim: 128
+embedding_dim: 300
 hidden_size: 128
 num_layers: 1
 dropout: 0.3
 num_classes: 3
 padding_idx: 0
-# Размер словаря берётся из data/processed/vocab.json при создании модели.
-# Подбор embedding_dim, hidden_size, num_layers и dropout — задача HPO.
+bidirectional: true
+pooling: mean
+pretrained_embeddings: data/external/navec_hudlit_v1_12B_500K_300d_100q.tar
+freeze_embeddings: true
+token_dropout: 0.1
+class_weights: false
+# Словарь берётся из data/processed/vocab.json.
+# Схема лучшего прогона: BiLSTM, замороженный Navec и выкидывание слов.
+# Архив Navec в git не входит. Подбор hidden_size, слоёв и dropout — задача HPO.

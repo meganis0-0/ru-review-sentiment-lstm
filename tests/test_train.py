@@ -4,9 +4,11 @@ import pytest
 import torch
 from torch import nn
 
+from src.models.config import load_model_config
 from src.models.rnn import SentimentLSTM
 from src.train import (
     EarlyStopping,
+    class_weight_tensor,
     compute_metrics,
     load_train_config,
     prepare_runtime,
@@ -158,3 +160,25 @@ def test_run_training_stops_when_metric_stalls(tmp_path: Path) -> None:
 
     assert result["stopped_early"] is True
     assert len(result["history"]) == 2
+
+
+def test_class_weights_grow_for_the_rare_label() -> None:
+    balanced = class_weight_tensor(["negative", "neutral", "positive"])
+    skewed = class_weight_tensor(["negative", "negative", "neutral", "positive"])
+
+    assert torch.allclose(balanced, torch.ones(3))
+    assert float(skewed[0]) < float(skewed[1])
+
+
+def test_model_yaml_uses_the_best_recorded_setup() -> None:
+    config = load_model_config(Path(__file__).resolve().parents[1] / "configs" / "model.yaml")
+
+    assert config.embedding_dim == 300
+    assert config.hidden_size == 128
+    assert config.bidirectional is True
+    assert config.pooling == "mean"
+    assert config.freeze_embeddings is True
+    assert config.token_dropout == 0.1
+    assert config.class_weights is False
+    assert config.pretrained_embeddings is not None
+    assert config.pretrained_embeddings.endswith("navec_hudlit_v1_12B_500K_300d_100q.tar")
