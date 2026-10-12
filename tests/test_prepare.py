@@ -116,6 +116,28 @@ def test_vocab_and_padding_do_not_learn_from_test() -> None:
                 assert ids[-1] == 0
 
 
+def test_frozen_val_and_test_stay_while_new_rows_join_train() -> None:
+    rows = _corpus()
+    first = prepare_dataset(rows, seed=42)
+    held = {
+        normalized_text(row["text"]): name
+        for name in ("val", "test")
+        for row in first["splits"][name]
+    }
+    extra = _row("ещё один длинный отзыв про банк и негатив", "999", "negative", "bank")
+    second = prepare_dataset([*rows, extra], seed=1, frozen=held)
+    again = {
+        normalized_text(row["text"]): name
+        for name in ("val", "test")
+        for row in second["splits"][name]
+    }
+
+    assert again == held
+    assert normalized_text(extra["text"]) in {
+        normalized_text(row["text"]) for row in second["splits"]["train"]
+    }
+
+
 def test_encode_keeps_the_start_of_a_long_review() -> None:
     tokens = [f"слово{index}" for index in range(MAX_LEN + 5)]
     vocab = build_vocab([tokens], min_freq=1)

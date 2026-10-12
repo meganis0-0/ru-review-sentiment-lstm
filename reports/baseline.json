@@ -1,44 +1,44 @@
 {
   "seed": 42,
-  "vocab_size": 15629,
-  "majority_label": "negative",
+  "vocab_size": 139038,
+  "majority_label": "positive",
   "val": {
     "majority": {
-      "accuracy": 0.33544303797468356,
-      "f1_macro": 0.1674565560821485,
+      "accuracy": 0.33122362869198313,
+      "f1_macro": 0.16587427363972532,
       "f1": {
-        "negative": 0.5023696682464455,
+        "negative": 0.0,
         "neutral": 0.0,
-        "positive": 0.0
+        "positive": 0.4976228209191759
       }
     },
     "logistic_regression": {
-      "accuracy": 0.5928270042194093,
-      "f1_macro": 0.5948778889955361,
+      "accuracy": 0.6856540084388185,
+      "f1_macro": 0.682957457643448,
       "f1": {
-        "negative": 0.5897435897435898,
-        "neutral": 0.5151515151515151,
-        "positive": 0.6797385620915033
+        "negative": 0.7138461538461537,
+        "neutral": 0.5819397993311038,
+        "positive": 0.7530864197530864
       }
     }
   },
   "test": {
     "majority": {
-      "accuracy": 0.33544303797468356,
-      "f1_macro": 0.1674565560821485,
+      "accuracy": 0.33122362869198313,
+      "f1_macro": 0.16587427363972532,
       "f1": {
-        "negative": 0.5023696682464455,
+        "negative": 0.0,
         "neutral": 0.0,
-        "positive": 0.0
+        "positive": 0.4976228209191759
       }
     },
     "logistic_regression": {
-      "accuracy": 0.6118143459915611,
-      "f1_macro": 0.6119786348433075,
+      "accuracy": 0.6561181434599156,
+      "f1_macro": 0.6530981855465631,
       "f1": {
-        "negative": 0.620253164556962,
-        "neutral": 0.529968454258675,
-        "positive": 0.6857142857142856
+        "negative": 0.6843657817109144,
+        "neutral": 0.5185185185185185,
+        "positive": 0.7564102564102564
       }
     }
   }

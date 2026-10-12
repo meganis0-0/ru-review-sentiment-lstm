@@ -81,8 +81,15 @@ def clean_rows(rows: list[dict[str, str]]) -> tuple[list[dict[str, str]], dict[s
 def split_rows(
     rows: list[dict[str, str]],
     seed: int = SEED,
+    frozen: dict[str, str] | None = None,
 ) -> dict[str, list[dict[str, str]]]:
-    """Делит отзывы 80/10/10 внутри каждой пары сфера-класс."""
+    """Делит отзывы 80/10/10 внутри каждой пары сфера-класс.
+
+    Если передан frozen, текст из val или test остаётся в своей части,
+    остальные строки попадают в train.
+    """
+    if frozen:
+        return _split_with_held_out(rows, frozen)
     groups: dict[tuple[str, str], list[dict[str, str]]] = defaultdict(list)
     for row in rows:
         groups[(row["source"], row["label"])].append(row)
@@ -129,9 +136,10 @@ def prepare_dataset(
     seed: int = SEED,
     max_len: int = MAX_LEN,
     min_freq: int = MIN_FREQ,
+    frozen: dict[str, str] | None = None,
 ) -> dict[str, object]:
     cleaned, dropped = clean_rows(rows)
-    parts = split_rows(cleaned, seed)
+    parts = split_rows(cleaned, seed, frozen)
     vocab = build_vocab([tokenize(row["text"]) for row in parts["train"]], min_freq)
     encoded = {
         name: [_encoded_row(row, vocab, max_len) for row in parts[name]] for name in SPLIT_NAMES
@@ -232,8 +240,35 @@ def _meta(prepared: dict[str, object]) -> dict[str, object]:
             "Текст в неверной кодировке восстановлен.",
             "Словарь собран только по train.",
             "В окне первые max_len токенов, хвост дополнен pad.",
+            *list(prepared.get("notes") or []),
         ],
     }
+
+
+def frozen_splits(output_dir: Path) -> dict[str, str] | None:
+    """Тексты текущего val и test, которые нельзя переносить в train."""
+    paths = {name: output_dir / f"{name}.csv" for name in ("val", "test")}
+    if any(not path.is_file() for path in paths.values()):
+        return None
+    frozen: dict[str, str] = {}
+    for name, path in paths.items():
+        with path.open(encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle):
+                frozen[normalized_text(row["text"])] = name
+    return frozen
+
+
+def _split_with_held_out(
+    rows: list[dict[str, str]],
+    frozen: dict[str, str],
+) -> dict[str, list[dict[str, str]]]:
+    parts: dict[str, list[dict[str, str]]] = {name: [] for name in SPLIT_NAMES}
+    for row in rows:
+        name = frozen.get(normalized_text(row["text"]), "train")
+        if name not in parts:
+            name = "train"
+        parts[name].append(row)
+    return parts
 
 
 def parse_args() -> argparse.Namespace:
@@ -245,7 +280,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    prepared = prepare_dataset(load_labels(args.labels))
+    frozen = frozen_splits(args.output_dir)
+    prepared = prepare_dataset(load_labels(args.labels), frozen=frozen)
+    if frozen:
+        notes = prepared.get("notes")
+        extra = "Val и test сохранены, новые отзывы добавлены только в train."
+        prepared["notes"] = [*(notes if isinstance(notes, list) else []), extra]
     write_processed(args.output_dir, prepared)
     meta = _meta(prepared)
     dropped = meta["dropped"]

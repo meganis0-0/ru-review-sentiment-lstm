@@ -51,5 +51,5 @@ def test_model_card_covers_metrics_and_limits() -> None:
 
 def test_dataset_card_covers_composition_and_license() -> None:
     text = (ROOT / "DATASET_CARD.md").read_text(encoding="utf-8")
-    for fragment in ("4788", "negative", "neutral", "positive", "MIT", "Apache-2.0", "31"):
+    for fragment in ("100948", "negative", "neutral", "positive", "MIT", "Apache-2.0", "31"):
         assert fragment in text
