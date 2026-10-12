@@ -1,0 +1,5 @@
+outs:
+- md5: 2ab54514ceefe490cb8bea419e73b82b
+  size: 116531163
+  hash: md5
+  path: rule.pt

@@ -1,0 +1,5 @@
+outs:
+- md5: f0db42d72fb909e82c5ad24a05e42d45
+  size: 172149979
+  hash: md5
+  path: corpus.pt
