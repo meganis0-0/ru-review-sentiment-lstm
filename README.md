@@ -91,7 +91,7 @@ docker compose up label-studio
 
 ## Статус
 
-Каркас проекта готов. Код модели, обучение, подбор гиперпараметров и интерфейс ещё не написаны — они идут отдельными задачами на канбане.
+Интерфейс читает одну из двух BiLSTM. `corpus` — 100 000 отзывов и исходные метки, val F1-macro 0.722. `rule` — банки, места и фильмы по правилу претензия/похвала, val и test 0.829. Одежда и аниме есть только у `corpus`.
 
 ## Окружение
 
@@ -122,7 +122,14 @@ docker compose up app
 Optuna dashboard: `docker compose up optuna`, затем http://localhost:8081.
 Label Studio: `docker compose up label-studio`, затем http://localhost:8080.
 
-Интерфейс: http://localhost:8501.
+Интерфейс: http://localhost:8501. API: `docker compose up api`, затем http://localhost:8000/docs.
+
+Локально, без Docker:
+
+```powershell
+.\.venv\Scripts\python -m streamlit run app/main.py
+.\.venv\Scripts\python -m uvicorn app.api:app --port 8000
+```
 
 GPU для обучения подключается отдельным файлом, после установки драйвера NVIDIA и поддержки GPU в Docker Desktop:
 

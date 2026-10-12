@@ -8,4 +8,10 @@ data/raw/*
 data/interim/*
 data/processed/*
 data/external/*
+data/rule/*
 !data/**/.gitkeep
+checkpoints
+models
+logs
+*.pt
+optuna.db
